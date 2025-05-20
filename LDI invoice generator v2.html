@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LDI Invoice Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Alegreya+SC&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
+        body {
+            font-family: Arial, sans-serif;
+            background-color: antiquewhite;
+        }
+        .main_con{
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%,-50%);
+            box-shadow: 0px 10px 15px -3px rgba(0,0,0,0.1);
+            width: 350px;
+            padding: 15px;
+            background-color: whitesmoke;
+            border-radius: 15px;
+        }
+        .box{
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .headings_con{
+            margin-bottom: 30px;
+        }
+        .ms_text{
+            font-family: "Alegreya SC", serif;
+            font-weight: 400;
+            font-style: normal;
+            text-align: center;
+            margin: 0px;
+            padding: 0;
+        }
+        label{
+            margin-bottom: 5px;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        input,select {
+            font-family: "Inter", sans-serif;
+            font-style: semi-bold;
+            padding: 10px;
+            border-radius: 10px;
+            outline: 0px;
+            border: 0px;
+            background-color: rgba(128, 128, 128,0.3);
+        }
+        label::after{
+            content: "*";
+            color: rgba(255, 0, 0,0.7);
+            margin-left: 4px;
+        }
+        input::placeholder{
+            color: black;
+        }
+        input:focus {
+            outline: none; /* Removes default outline */
+            border: 1px solid #007bff; /* Adds a blue border */
+            background-color: #f0f8ff; /* Light background color */
+        }
+        select:focus{
+            outline: none; /* Removes default outline */
+            border: 1px solid #007bff; /* Adds a blue border */
+            background-color: #f0f8ff; /* Light background color */
+        }
+        #err_msg{
+            color: red;
+            font-size: 12px;
+            margin-top: 8px;
+            margin-left: 5px;
+            display: none;
+        }
+        .mm_yy_con{
+            display: flex;
+            justify-content: space-between;
+        }
+        .dfv{
+            display: flex;
+            flex-direction: column;
+        }
+        #month{
+            width: 170px;
+        }
+        #year{
+            width: 90px;
+        }
+        #generate_btn{
+            width: 300px;
+            height: 48px;
+            background-color: #5A15ED; 
+            border: none;
+            border-radius: 10px;
+            font-size: 24px;
+            font-weight: bold;
+            font-family: 'Plus Jakarta Sans';
+            color: white;
+            cursor: pointer;
+        }
+        .gen_btn{
+            display: flex;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="main_con">
+        <div class="box">
+            <div class="headings_con">
+                <h1 class="main_heading ms_text">Leo Does IT</h1>
+                <h3 class="sub_heading ms_text" style="text-align: center;">Invoice Generator</h3>
+            </div>
+            <form id="invoiceForm">
+                <div class="ip_con emp_name dfv">
+                    <label for="employee">Select Employee</label>
+                    <select id="employee" onchange="populateFields()" required>
+                        <option value="" disabled selected>Select an employee</option>
+                        <option value="0">Ashok</option>
+                        <option value="1">Shruthi</option>
+                        <option value="2">Najam</option>
+                        <option value="3">Chaitali</option>
+                        <option value="4">Sudheer</option>
+                        <option value="5">Sharmisha</option>
+                        <option value="6">Yousuf</option>
+                        <option value="7">Nagarjuna</option>
+                        <option value="8">Vamsi Manikanta</option>
+                        <option value="9">Santosh Kumar</option>
+                        <option value="10">William Doung</option>
+                        <option value="11">Prasad</option>
+                    </select> <br><br>
+                    <p id="err_msg">invalid selection</p>
+                </div>
+                <div class="ip_con mm_yy_con">
+
+                    <div class="mm_con dfv">
+                        <label for="month">Month</label>
+                        <select id="month" required>
+                            <option value="" disabled selected>Select month</option>
+                            <option value="01">Jan</option>
+                            <option value="02">Feb</option>
+                            <option value="03">Mar</option>
+                            <option value="04">Apr</option>
+                            <option value="05">May</option>
+                            <option value="06">Jun</option>
+                            <option value="07">Jul</option>
+                            <option value="08">Aug</option>
+                            <option value="09">Sep</option>
+                            <option value="10">Oct</option>
+                            <option value="11">Nov</option>
+                            <option value="12">Dec</option>
+                        </select><br><br>
+                    </div>
+                    
+                    <div class="yy_con dfv">
+                        <label for="year">Year</label>
+                        <input type="number" id="year" value=""><br><br>
+                    </div>
+                </div>
+                <div class="ip_con hh_con dfv">
+                    <label for="hours">Hours Worked</label>
+                    <input type="text" id="hours" placeholder="Total Hours" required><br><br>
+                </div>
+                <div class="ip_con gen_btn">
+                    <button id="generate_btn" type="button" onclick="generateInvoice()">Generate Invoice</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+
+        document.querySelectorAll('input[type="number"]').forEach((input) => {
+        input.addEventListener('input', (event) => {
+            // Removes any non-numeric characters
+            console.log(event.target.value);
+            
+            event.target.value = event.target.value.replace(/[^0-9]/g, '');
+        });
+        });
+
+        document.querySelectorAll('input[type="text"]').forEach((input) => {
+        input.addEventListener('input', (event) => {
+            // Removes any non-numeric characters
+            console.log(event.target.value);
+            
+            event.target.value = event.target.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
+        });
+        });
+
+
+        // Employee data
+        const employees = [
+            {
+                name: "Ashok",
+                role: "Storage Admin",
+                rate: 59.00,
+                to: "Resource logistics,inc",
+                address:"39 Milltown Road,",
+                statepin:"East Brunswick, NJ 08816",
+                from: "HCL",
+                invoiceSuffix: "11"
+            },
+            {
+                name: "Shruthi Narsannagari",
+                role: "IAM",
+                //rate: 52.00, //this rate upto aug24
+                rate: 62.00, //new rate from sep24
+                to: "Globe2Technologies INC",
+                address:"704 GinesiDrive, Suite #29,",
+                statepin:"Morganville, NJ, 07751",
+                from: "Blackrock",
+                invoiceSuffix: "12"
+            },
+            {
+                name: "Ahmed Quraishi",
+                role: "SCALA Developer",
+                rate: 60.00,
+                to: "AARKS Solutions INC",
+                address:"1317 Summerfield Dr,",
+                statepin:"Herndon, VA 20170",
+                from: "Ahmed Quraishi Accenture Project",
+                invoiceSuffix: "06"
+            },
+            {
+                name: "Chaitali",
+                role: "DBA",
+                // rate: 61.00,
+                rate: 57.83,
+                to: "Systel INC.",
+                address:"5755 North Point Parkway, Suite 79",
+                statepin:"Alpharetta, GA 30022",
+                from: "CTS",
+                invoiceSuffix: "10"
+            },
+            {
+                name: "Sudheer kolla",
+                role: "Postgresql DBA",
+                // rate: 56.5,
+                rate: 55.82,
+                to: "Systel INC.",
+                address:"5755 North Point Parkway, Suite 79",
+                statepin:"Alpharetta, GA 30022",
+                from: "CTS",
+                invoiceSuffix: "07"
+            },
+            {
+                name: "Sharmisha",
+                role: "Software Developer",
+                rate: 63.00,
+                to: "Themesoft",
+                address:"616 S Coppell RD,",
+                statepin:"Coppell, TX 75019",
+                from: "CTS",
+                invoiceSuffix: "14"
+            },
+            {
+                name: "Mohammed Yousuf Ali Shaik",
+                role: "",
+                rate: 71.00,
+                to: "Themesoft",
+                address:"616 S Coppell RD,",
+                statepin:"Coppell, TX 75019",
+                from: "CTS",
+                invoiceSuffix: "15"
+            },
+            {
+                name: "Dhyana Nagarjuna",
+                role: "DBA",
+                rate: 63.00,
+                to: "ASK Consulting, Inc",
+                address:"6495 Shiloh Road.Suite 300,",
+                statepin:"Alpharetta, GA 30005",
+                from: "Accenture",
+                invoiceSuffix: "16"
+            },
+            {
+                name: "Vamsi Manikanta S",
+                role: "Senior Consultant",
+                rate: 70.00,
+                to: "Cigniti Technologies, Inc.",
+                address:"433 E Las Colinas blvd, Suite 1300,",
+                statepin:"Irving, TX 75039",
+                from: "Insulet Corporation",
+                invoiceSuffix: "17"
+            },
+            {
+                name: "Segu Santosh Kumar",
+                role: "DevOps",
+                rate: 6.66,
+                // to: "Logisoft Technologies Inc.",
+                to: "Tekriders, Inc.",
+                // address:"50 Cragwood Road, Suite #315,",
+                address:"50 Cragwood Road, Suite: 222,",
+                // statepin:"South Plainfield, NJ - 07080",
+                statepin:"South Plainfield, NJ - 07080",
+                from: "Apple",
+                invoiceSuffix: "18"
+            },
+            {
+                name: "William Duong",
+                role: "QA",
+                rate: 51.00,
+                to: "Cigniti Technologies, Inc.",
+                address:"433 E Las Colinas blvd, Suite 1300,",
+                statepin:"Irving, TX 75039",
+                from: "Tandem Diabetes Care Inc",
+                invoiceSuffix: "19"
+            },
+            {
+                name: "Javvadi Vijay Prasad",
+                role: "Sr Consultant",
+                rate: 73.00,
+                to: "Cigniti Technologies, Inc.",
+                address:"433 E Las Colinas blvd, Suite 1300,",
+                statepin:"Irving, TX 75039",
+                from: "Verisk Analytics",
+                invoiceSuffix: "20"
+            }
+            // Add more employee objects as needed
+        ];
+
+        // Set the current year as default
+        document.getElementById("year").value = new Date().getFullYear();
+
+        function populateFields() {
+            const employeeSelect = document.getElementById("employee");
+            const selectedIndex = employeeSelect.value; // Get the selected index
+            const selectedEmployee = employees[selectedIndex]; // Get employee data from the array
+
+            // Populate the fields
+            document.getElementById("rate").value = selectedEmployee.rate;
+            document.getElementById("to").value = selectedEmployee.to;
+            document.getElementById("from").value = selectedEmployee.from;
+            document.getElementById("invoiceSuffix").value = selectedEmployee.invoiceSuffix;
+        }
+
+        function generateInvoice() {
+            const employeeSelect = document.getElementById("employee");
+            const selectedIndex = employeeSelect.value; // Get the selected index
+            const selectedEmployee = employees[selectedIndex]; // Get employee data from the array
+            const hours = document.getElementById("hours").value;
+            const rate = selectedEmployee.rate; // Use rate from selected employee
+            const totalAmount = hours * rate;
+
+            // Get today's date
+            const today = new Date();
+            const formattedDate = today.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+
+            
+
+            // Get the current year and month for invoice number
+            const year = document.getElementById("year").value.slice(-2); // Get last 2 digits of the year
+            const month = document.getElementById("month").value; // Get selected month
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            //LDI - Header
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(12);
+            doc.text("Leo DOES IT", 20, 20);
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            doc.text("1335 Regents Park Dr,", 20, 25);
+            doc.text("Suite# 270", 20, 30);
+            doc.text("Houston, TX 77058", 20, 35);
+            doc.text("551 256 0027", 20, 40);
+            doc.text("Tax Id#: 85-0653624", 20, 45);
+
+            // Invoice title
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(16);
+            doc.text("INVOICE", 160, 30);
+
+            // Emp Invoice info and Date (Invoice #, Date)
+            const invoiceSuffix = selectedEmployee.invoiceSuffix; // Get the suffix from the selected employee
+            const invoiceNumber = `${year}${month}${invoiceSuffix}`; // Concatenate: Format = YYMM + suffix
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            doc.text(`INVOICE #: ${invoiceNumber}`, 160, 40);
+            doc.text(`DATE: ${formattedDate}`, 160, 45);  // Insert today's date here
+
+            // To information
+            doc.setFont("helvetica", "bold");
+            doc.text("TO:", 20, 60);
+            doc.setFont("helvetica", "normal");
+            doc.text(selectedEmployee.to, 20, 65);
+            doc.text(selectedEmployee.address, 20, 70);
+            doc.text(selectedEmployee.statepin, 20, 75);
+
+
+            //For information
+            doc.setFont("helvetica", "bold");
+            doc.text("FOR:", 120, 60);
+            doc.setFont("helvetica", "normal");
+            doc.text(selectedEmployee.from, 120, 65);
+
+            // Table headers
+            doc.setLineWidth(0.5);
+            doc.line(20, 85, 190, 85);  // top line of header
+            doc.setFont("helvetica", "bold");
+            doc.text("DESCRIPTION", 30, 90);
+            doc.text("HOURS", 120, 90);
+            doc.text("RATE", 145, 90);
+            doc.text("AMOUNT", 170, 90);
+            doc.setLineWidth(0.2);
+            doc.line(20, 92, 190, 92);  // bottom line of header
+            doc.line(110, 85, 110, 185);  // Right line After Description 
+            doc.line(140, 85, 140, 185);  // Right line After Hours
+            doc.line(165, 85, 165, 192);  // Right line After Rate
+
+            // Get the month name in short form
+            const monthIndex = parseInt(month) - 1; // Month index (0-11)
+            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            const monthName = monthNames[monthIndex]; // Get month name in short form
+
+            // Determine the start and end date of the selected month
+            const yearValue = document.getElementById("year").value; // Get the selected year
+            const startDate = `1`; // Start date is always the 1st
+            const endDate = new Date(yearValue, monthIndex + 1, 0).getDate(); // Get last day of the month
+
+            // Construct the Employee name Role with (month start - End)
+            const description = `${selectedEmployee.name} ${selectedEmployee.role} (${monthName} ${startDate} - ${endDate})`;
+
+            // Employee description
+            doc.setFont("helvetica", "normal");
+            doc.text(description, 30,98);
+            doc.text(hours.toString(), 120,98); //Employee total hours
+            doc.text(`$${rate.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 145,98); //Employee rate
+            // doc.text(`$${totalAmount.toFixed(2)}`, 170, 98); //Employee total hours * rate
+            doc.text(`$${totalAmount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 170, 98); //Employee total hours * rate
+
+
+            //total section at the bottom-right
+            doc.text("TOTAL", 145, 190);
+            // doc.text(`$${totalAmount.toFixed(2)}`, 170, 190);
+            doc.text(`$${totalAmount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 170, 190); //Employee total hours * rate
+            doc.line(165, 192, 190, 192);  // Bottom line After total bottom Rate - horizantal
+            doc.line(190, 185, 190, 192);  // right line After total bottom Rate - vertical
+
+            // Draw the full table border
+            doc.setLineWidth(0.5);
+            doc.rect(20, 85, 170, 100);  // full table border doc.rect(x, y, width, height);
+
+            // Footer text
+            doc.setFontSize(10);
+            doc.text("Make all checks payable to: Payable net xx", 20, 240);
+            doc.setFont("helvetica", "bold");
+            doc.text("Thank you for your business!", 105, 250, { align: "center" });
+
+             // Construct the filename
+            const toValue = selectedEmployee.to.replace(/\s+/g, '_'); // Replace spaces with underscores for the filename
+            const fileName = `${selectedEmployee.name}_${monthName}${year}_${toValue} invoice.pdf`; // Create the filename
+
+            // Save the PDF with the constructed filename
+            doc.save(fileName);
+        }
+    </script>
+</body>
+</html>
